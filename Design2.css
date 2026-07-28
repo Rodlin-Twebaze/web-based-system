@@ -1,0 +1,106 @@
+
+.navbar {
+    background:#333;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 5px blrgba(0, 0, 0, 0.1);
+}
+
+.navbar a {
+    color: white;
+    padding: 15px 20px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    transition: 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.navbar a:hover {
+    background-color: #555;
+    border-bottom-color: #e74c3c;
+    text-decoration: none;
+}
+
+.navbar a.active {
+    background-color: #34495e;
+    border-bottom-color: #3498db;
+}
+.bar {
+    background-color: #333;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 5px blrgba(0,0,0,0,1);
+}
+
+.bar a {
+    color: white;
+    padding: 15px 20px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    transition: 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.bar a:hover {
+    background-color: #555;
+    border-bottom-color: #e74c3c;
+    text-decoration: none;  
+}
+.navbar a.active {
+    background-color: #34495e;
+    border-bottom-color: #3498db;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 15px;
+    padding: 20px;
+    background-color:#ddd;
+    font-size: 15px;
+}
+.image.jpg{
+    width: 10px;
+    height: 10px;
+}
+@media screen and (max-width: 600px) {
+    .navbar a {
+        float: none;
+        display: block;
+        text-align: left;
+    }
+}
+
+
+.about-container {
+  display: flex;
+  align-items: center;      /* Centers the text and image vertically */
+  justify-content: space-evenly; /* Pushes text to the left, image to the right */
+  gap: 40px;                 /* Adds space between the text and the image */
+  padding: 0px;
+}
+
+.about-content {
+  flex: 1;                   /* Takes up the remaining available space */
+  float: left;
+}
+
+.image3-container {
+  flex: 1;                   /* Takes up equal space, or set a specific width */
+  float: right;
+  /*text-align: right;*/        /* Aligns the image inside its container to the right */
+}
+
+img {
+  max-width: 100%;           /* Ensures the image doesn't overflow */
+  height: auto;              /* Maintains the aspect ratio */
+}
+
+#image-3 {
+    height: 191.19px;
+}

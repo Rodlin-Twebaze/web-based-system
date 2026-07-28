@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaint Submitted Successfully</title>
+    <script src="web.js" defer></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content {
+            flex: 1;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .success-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 60px;
+            color: #27ae60;
+            margin-bottom: 20px;
+        }
+
+        .success-container h1 {
+            color: #27ae60;
+            margin-bottom: 20px;
+        }
+
+        .success-container p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .complaint-details {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-left: 4px solid #27ae60;
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .button-group a {
+            display: inline-block;
+            background-color: #2c3e50;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 10px;
+            transition: 0.3s ease;
+        }
+
+        .button-group a:hover {
+            background-color: #1a252f;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div class="success-container">
+            <div class="success-icon">✓</div>
+            <h1>Complaint Submitted Successfully!</h1>
+            <p>Thank you for submitting your complaint. We have received your submission and will review it shortly.</p>
+            
+            <div class="complaint-details">
+                <p><strong>Complaint ID:</strong> #CPL-2026-001</p>
+                <p><strong>Status:</strong> Pending Review</p>
+                <p><strong>Expected Response Time:</strong> 5-7 business days</p>
+            </div>
+
+            <p>A confirmation email has been sent to your registered email address.</p>
+
+            <div class="button-group">
+                
+                <a href="home.html">Return to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Ministry of Local Government</p>
+    </footer>
+</body>
+</html>

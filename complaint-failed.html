@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaint Submission Failed</title>
+    <script src="web.js" defer></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content {
+            flex: 1;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .error-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .error-icon {
+            font-size: 60px;
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+
+        .error-container h1 {
+            color: #e74c3c;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+
+        .error-container p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .error-details {
+            background-color: #fee;
+            padding: 20px;
+            border-left: 4px solid #e74c3c;
+            text-align: left;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .error-details p {
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .error-details strong {
+            color: #e74c3c;
+        }
+
+        .button-group {
+            margin-top: 30px;
+        }
+
+        .button-group a {
+            display: inline-block;
+            background-color: #2c3e50;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 10px;
+            transition: 0.3s ease;
+            font-weight: bold;
+        }
+
+        .button-group a:hover {
+            background-color: #1a252f;
+        }
+
+        .button-group a.retry {
+            background-color: #e74c3c;
+        }
+
+        .button-group a.retry:hover {
+            background-color: #c0392b;
+        }
+
+        .button-group a.secondary {
+            background-color: #95a5a6;
+        }
+
+        .button-group a.secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        footer p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div class="error-container">
+            <div class="error-icon">✕</div>
+            <h1>Complaint Submission Failed</h1>
+            <p>We encountered an issue while processing your complaint submission. Please review the details below.</p>
+            
+            <div class="error-details">
+                <p><strong>Error:</strong> Unable to process your complaint at this time</p>
+                <p><strong>Reason:</strong> <span id="errorReason">Server error or missing required fields</span></p>
+                <p><strong>Timestamp:</strong> <span id="errorTime"></span></p>
+            </div>
+
+            <p>Please ensure all required fields are filled correctly and try again.</p>
+            <p>If the problem persists, please contact our support team for assistance.</p>
+
+            <div class="button-group">
+                <a href="submit-complaint.html" class="retry">Try Again</a>
+                <a href="contact-us.html" class="secondary">Contact Support</a>
+                <a href="home.html" class="secondary">Return to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Contact Us | About | Privacy Policy</p>
+        <p>&copy; 2026 Ministry of Local Government</p>
+    </footer>
+
+    <script>
+        // Display current date and time
+        const now = new Date();
+        const formattedTime = now.toLocaleString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        document.getElementById('errorTime').textContent = formattedTime;
+
+        // Possible error reasons (can be customized)
+        const errorReasons = [
+            'Network connection error',
+            'Missing required fields',
+            'Invalid email format',
+            'File upload failed',
+            'Server temporary unavailable'
+        ];
+        
+        // Display random error reason or specific one
+        const randomReason = errorReasons[Math.floor(Math.random() * errorReasons.length)];
+        document.getElementById('errorReason').textContent = randomReason;
+    </script>
+</body>
+</html>

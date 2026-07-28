@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Complaint Submitted Successfully</title>
-    <script src="web.js" defer></script>
     <style>
         html, body {
             height: 100%;
@@ -94,15 +93,15 @@
             <p>Thank you for submitting your complaint. We have received your submission and will review it shortly.</p>
             
             <div class="complaint-details">
-                <p><strong>Complaint ID:</strong> #CPL-2026-001</p>
-                <p><strong>Status:</strong> Pending Review</p>
-                <p><strong>Expected Response Time:</strong> 5-7 business days</p>
+                <p><strong>Complaint ID:</strong> <span id="complaintId">-</span></p>
+                <p><strong>Category:</strong> <span id="complaintType">-</span></p>
+                <p><strong>Status:</strong> <span id="complaintStatus">-</span></p>
             </div>
 
-            <p>A confirmation email has been sent to your registered email address.</p>
+            <p>You can track this complaint's progress at any time from your dashboard.</p>
 
             <div class="button-group">
-                
+                <a href="user-dashboard.html">View My Complaints</a>
                 <a href="home.html">Return to Home</a>
             </div>
         </div>
@@ -111,5 +110,12 @@
     <footer>
         <p>&copy; 2026 Ministry of Local Government</p>
     </footer>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        document.getElementById("complaintId").textContent = params.get("id") || "-";
+        document.getElementById("complaintType").textContent = params.get("type") || "-";
+        document.getElementById("complaintStatus").textContent = params.get("status") || "-";
+    </script>
 </body>
 </html>

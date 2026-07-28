@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pending Complaints</title>
+    <title>My Complaints</title>
     <link rel="stylesheet" href="Design2.css">
     <script src="js/common.js" defer></script>
-    <script src="js/admin-shared.js" defer></script>
-    <script defer>
-        document.addEventListener("DOMContentLoaded", () => initStatusPage("pending"));
-    </script>
+    <script src="js/user-dashboard.js" defer></script>
     <style>
         html, body {
             height: 100%;
@@ -28,29 +25,28 @@
     </style>
 </head>
 <body>
-    <div class="bar">
-        <a href="admin-dashboard.html">Admin Dashboard</a>
-        <a href="opening.html">Open</a>
-        <a href="pending.html" class="active">Pending</a>
-        <a href="closed.html">Closed</a>
+    <div class="navbar">
+        <a href="home.html">Home</a>
+        <a href="user-dashboard.html" class="active">My Complaints</a>
+        <a href="submit-complaint.html">Submit Complaint</a>
         <a href="logout.html">Logout</a>
     </div>
 
     <div class="panel">
-        <h1>Pending Complaints</h1>
-        <p>Complaints that are currently pending and awaiting action.</p>
-        <p id="emptyState" class="empty-state" hidden>There are no pending complaints.</p>
+        <h1>Welcome, <span id="welcomeName"></span></h1>
+        <p>Track the status of every complaint you have submitted.</p>
+        <a href="submit-complaint.html" class="btn">Submit a New Complaint</a>
+
+        <h2>Your Complaints</h2>
+        <p id="emptyState" class="empty-state" hidden>You haven't submitted any complaints yet.</p>
 
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Submitted By</th>
                     <th>Type</th>
                     <th>Message</th>
                     <th>Status</th>
-                    <th>Assigned To</th>
-                    <th>Date</th>
-                    <th>Actions</th>
+                    <th>Date Submitted</th>
                 </tr>
             </thead>
             <tbody id="complaintsBody"></tbody>

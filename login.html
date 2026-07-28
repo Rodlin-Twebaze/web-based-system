@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="Design2.css">
-    <script src="web.js" defer></script>
+    <script src="js/common.js" defer></script>
+    <script src="js/login.js" defer></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -36,7 +37,6 @@
             font-size: 14px;
         }
 
-        input[type="text"],
         input[type="email"],
         input[type="password"] {
             width: 100%;
@@ -48,7 +48,6 @@
             font-size: 14px;
         }
 
-        input[type="text"]:focus,
         input[type="email"]:focus,
         input[type="password"]:focus {
             outline: none;
@@ -72,28 +71,49 @@
         input[type="submit"]:hover {
             background-color: #1a252f;
         }
-        
+
+        .register-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .register-link a {
+            color: #2c3e50;
+            text-decoration: none;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="navbar">
         <a href="home.html">Home</a>
-        <a href="login.html">Login</a>
+        <a href="login.html" class="active">Login</a>
     </div>
 
-    <h1>Login</h1>
-    <form action="login.php" method="post">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required><br><br>
+    <form id="loginForm" novalidate>
+        <h1>Login</h1>
+
+        <div id="loginInfo" class="alert alert-success" hidden></div>
+        <div id="loginError" class="alert alert-error" hidden></div>
 
         <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required><br><br>
+        <input type="email" id="email" name="email" required>
 
         <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br><br>
+        <input type="password" id="password" name="password" required>
 
-       
         <input type="submit" value="Login">
 
+        <div class="register-link">
+            Don't have an account? <a href="register.html">Register here</a>
+        </div>
+    </form>
+
+    <footer style="background-color: #333; color: white; padding: 20px; text-align: center; margin-top: 20px;">
+        <p>&copy; 2026 Ministry of Local Government</p>
+    </footer>
 </body>
 </html>

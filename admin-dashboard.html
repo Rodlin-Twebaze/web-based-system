@@ -5,29 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="Design2.css">
-    <script src="web.js" defer></script>
+    <script src="js/common.js" defer></script>
+    <script src="js/admin-shared.js" defer></script>
+    <script src="js/admin-dashboard.js" defer></script>
 </head>
 <body>
     <div class="bar">
-        <a href="opening.html">Opening</a>
+        <a href="admin-dashboard.html" class="active">Admin Dashboard</a>
+        <a href="opening.html">Open</a>
         <a href="pending.html">Pending</a>
         <a href="closed.html">Closed</a>
+        <a href="logout.html">Logout</a>
     </div>
-    
-    <h1>Admin Dashboard</h1> 
-    <p>Welcome to the Admin Dashboard. Here you can manage complaints and view their status.</p>
-    <p>Use the navigation links above to access different sections of the dashboard.</p>
-    <p>For any assistance, please contact the support team.</p>
-    <p>Thank you for using our complaint management system.</p>
-    <p>Note: Ensure to log out after your session for security purposes.</p>
-    <p>For more information, refer to the user manual or help section.</p>
-    <p>Stay updated with the latest features and improvements in the system.</p>
-    
-    <footer style="background-color: #333; color: white; padding: 20px; text-align: center; margin-top: 20px;">
-    
+
+    <div class="panel">
+        <h1>Welcome, <span id="welcomeName"></span></h1>
+        <p>Manage every complaint in the system: update its status, assign it to an administrator, or remove it.</p>
+
+        <h2>All Complaints</h2>
+        <p id="allEmptyState" class="empty-state" hidden>There are no complaints in the system yet.</p>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Submitted By</th>
+                    <th>Type</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Assigned To</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="allComplaintsBody"></tbody>
+        </table>
+
+        <h2>Complaints Assigned To Me</h2>
+        <p id="myEmptyState" class="empty-state" hidden>No complaints are currently assigned to you.</p>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Submitted By</th>
+                    <th>Type</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Assigned To</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="myComplaintsBody"></tbody>
+        </table>
+    </div>
+
+    <footer style="background-color: #333; color: white; padding: 20px; text-align: center;">
         <p>&copy; 2026 Ministry of Local Government</p>
     </footer>
-    
-    
 </body>
 </html>

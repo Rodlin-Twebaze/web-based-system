@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>open complaints</title>
+    <title>Open Complaints</title>
     <link rel="stylesheet" href="Design2.css">
-    <script src="webS.js" defer></script>
+    <script src="js/common.js" defer></script>
+    <script src="js/admin-shared.js" defer></script>
+    <script defer>
+        document.addEventListener("DOMContentLoaded", () => initStatusPage("open"));
+    </script>
     <style>
         html, body {
             height: 100%;
@@ -20,16 +24,6 @@
             min-height: 100vh;
         }
 
-        .navbar {
-            background-color: #2c3e50;
-            padding: 10px 0;
-        }
-
-        .content {
-            flex: 1;
-            padding: 20px;
-        }
-
         footer {
             background-color: #333;
             color: white;
@@ -39,27 +33,38 @@
             width: 100%;
             box-sizing: border-box;
         }
-
-        footer p {
-            margin: 5px 0;
-        }
     </style>
 </head>
 <body>
     <div class="bar">
         <a href="admin-dashboard.html">Admin Dashboard</a>
-        <a href="opening.html">Opening</a>
+        <a href="opening.html" class="active">Open</a>
         <a href="pending.html">Pending</a>
         <a href="closed.html">Closed</a>
+        <a href="logout.html">Logout</a>
     </div>
-    
-    <div class="content">
+
+    <div class="panel">
         <h1>Open Complaints</h1>
-        <p>Welcome to the Open Complaints page. Here you can view all the complaints that are currently open and awaiting resolution.</p>
-        <p>Use the navigation links above to access different sections of the complaint management system.</p>
-        <p>For any assistance, please contact the support team.</p>
+        <p>Complaints that are currently open and awaiting action.</p>
+        <p id="emptyState" class="empty-state" hidden>There are no open complaints.</p>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Submitted By</th>
+                    <th>Type</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Assigned To</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="complaintsBody"></tbody>
+        </table>
     </div>
-    
+
     <footer>
         <p>&copy; 2026 Ministry of Local Government</p>
     </footer>

@@ -1,10 +1,12 @@
 import re
 import uuid
 from datetime import datetime, timezone
+from functools import wraps
 
 from fastapi import Depends, FastAPI, HTTPException, Query, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy import MetaData
 from typing import cast, Any
 from sqlalchemy.orm import Session
@@ -19,6 +21,17 @@ except Exception:
     from models import Base, Complaint, User
 
 app = FastAPI()
+
+# The frontend is a set of static HTML pages with no auth/session tokens,
+# so it's served from a different origin (opened directly or via a static
+# file server) than this API. Allow all origins since routes aren't
+# protected by JWT/role-based access anyway.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 try:
     engine = init_db()
@@ -128,12 +141,39 @@ def _get_complaint_or_404(db: Session, complaint_id: uuid.UUID) -> Complaint:
     return complaint
 
 
+def handle_db_errors(func):
+    """Route decorator: turns unhandled DB failures into proper HTTP error responses."""
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        db = kwargs.get("db")
+        try:
+            return func(*args, **kwargs)
+        except IntegrityError as exc:
+            if db is not None:
+                db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Request conflicts with existing data",
+            ) from exc
+        except SQLAlchemyError as exc:
+            if db is not None:
+                db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="A database error occurred",
+            ) from exc
+
+    return wrapper
+
+
 @app.get("/")
 def health_check():
     return {"message": "Complaint system API is running"}
 
 
 @app.post("/auth/register", status_code=status.HTTP_201_CREATED)
+@handle_db_errors
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     if payload.password != payload.confirm_password:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Passwords do not match")
@@ -168,6 +208,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
 
 
 @app.post("/auth/login")
+@handle_db_errors
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
     email = payload.email.strip().lower()
     user = db.query(User).filter(User.email == email).first()
@@ -193,6 +234,7 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
 # User routes
 @app.get("/users")
+@handle_db_errors
 def get_users(
     name: str | None = None,
     username: str | None = None,
@@ -215,12 +257,14 @@ def get_users(
 
 
 @app.get("/users/{user_id}")
+@handle_db_errors
 def get_user(user_id: uuid.UUID, db: Session = Depends(get_db)):
     user = _get_user_or_404(db, user_id)
     return {"message": f"Details of user {user_id}", "user": _serialize_user(user)}
 
 
 @app.post("/users", status_code=status.HTTP_201_CREATED)
+@handle_db_errors
 def create_user(payload: CreateUserRequest, db: Session = Depends(get_db)):
     email = payload.email.strip().lower()
     if db.query(User).filter(User.email == email).first():
@@ -246,6 +290,7 @@ def create_user(payload: CreateUserRequest, db: Session = Depends(get_db)):
 
 
 @app.patch("/users/{user_id}")
+@handle_db_errors
 def update_user(user_id: uuid.UUID, payload: UpdateUserRequest, db: Session = Depends(get_db)):
     user = _get_user_or_404(db, user_id)
 
@@ -278,6 +323,7 @@ def update_user(user_id: uuid.UUID, payload: UpdateUserRequest, db: Session = De
 
 
 @app.delete("/users/{user_id}")
+@handle_db_errors
 def delete_user(user_id: uuid.UUID, db: Session = Depends(get_db)):
     user = _get_user_or_404(db, user_id)
     db.delete(user)
@@ -288,6 +334,7 @@ def delete_user(user_id: uuid.UUID, db: Session = Depends(get_db)):
 
 # Complaint routes
 @app.get("/complaints")
+@handle_db_errors
 def get_complaints(
     status: str | None = Query(default=None),
     complaint_type: str | None = None,
@@ -310,12 +357,14 @@ def get_complaints(
 
 
 @app.get("/complaints/{complaint_id}")
+@handle_db_errors
 def get_complaint(complaint_id: uuid.UUID, db: Session = Depends(get_db)):
     complaint = _get_complaint_or_404(db, complaint_id)
     return {"message": f"Details of complaint {complaint_id}", "complaint": _serialize_complaint(complaint)}
 
 
 @app.post("/complaints", status_code=status.HTTP_201_CREATED)
+@handle_db_errors
 def create_complaint(payload: CreateComplaintRequest, db: Session = Depends(get_db)):
     creator = _get_user_or_404(db, payload.created_by_user_id)
 
@@ -333,6 +382,7 @@ def create_complaint(payload: CreateComplaintRequest, db: Session = Depends(get_
 
 
 @app.patch("/complaints/{complaint_id}")
+@handle_db_errors
 def update_complaint(complaint_id: uuid.UUID, payload: UpdateComplaintRequest, db: Session = Depends(get_db)):
     complaint = _get_complaint_or_404(db, complaint_id)
     updates = payload.model_dump(exclude_unset=True)
@@ -365,6 +415,7 @@ def update_complaint(complaint_id: uuid.UUID, payload: UpdateComplaintRequest, d
 
 
 @app.delete("/complaints/{complaint_id}")
+@handle_db_errors
 def delete_complaint(complaint_id: uuid.UUID, db: Session = Depends(get_db)):
     complaint = _get_complaint_or_404(db, complaint_id)
     db.delete(complaint)

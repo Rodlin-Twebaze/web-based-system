@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Complaint Submission Failed</title>
-    <script src="web.js" defer></script>
     <style>
         html, body {
             height: 100%;
@@ -140,41 +139,30 @@
 
             <div class="button-group">
                 <a href="submit-complaint.html" class="retry">Try Again</a>
-                <a href="contact-us.html" class="secondary">Contact Support</a>
+                <a href="user-dashboard.html" class="secondary">View My Complaints</a>
                 <a href="home.html" class="secondary">Return to Home</a>
             </div>
         </div>
     </div>
 
     <footer>
-        <p>Contact Us | About | Privacy Policy</p>
         <p>&copy; 2026 Ministry of Local Government</p>
     </footer>
 
     <script>
-        // Display current date and time
         const now = new Date();
-        const formattedTime = now.toLocaleString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
+        const formattedTime = now.toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'long',
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
         });
         document.getElementById('errorTime').textContent = formattedTime;
 
-        // Possible error reasons (can be customized)
-        const errorReasons = [
-            'Network connection error',
-            'Missing required fields',
-            'Invalid email format',
-            'File upload failed',
-            'Server temporary unavailable'
-        ];
-        
-        // Display random error reason or specific one
-        const randomReason = errorReasons[Math.floor(Math.random() * errorReasons.length)];
-        document.getElementById('errorReason').textContent = randomReason;
+        const params = new URLSearchParams(window.location.search);
+        document.getElementById('errorReason').textContent =
+            params.get('reason') || 'Server error or missing required fields';
     </script>
 </body>
 </html>

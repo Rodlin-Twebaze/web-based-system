@@ -1,0 +1,20 @@
+{
+  "name": "web-based-system",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/Rodlin-Twebaze/web-based-system#readme",
+  "bugs": {
+    "url": "https://github.com/Rodlin-Twebaze/web-based-system/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rodlin-Twebaze/web-based-system.git"
+  },
+  "license": "ISC",
+  "author": "Twebaze Rodlin",
+  "type": "module",
+  "main": "web.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

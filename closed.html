@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resolved Complaints</title>
     <link rel="stylesheet" href="Design2.css">
-    <script src="web.js" defer></script>
+    <script src="js/common.js" defer></script>
+    <script src="js/admin-shared.js" defer></script>
+    <script defer>
+        document.addEventListener("DOMContentLoaded", () => initStatusPage("closed"));
+    </script>
     <style>
         html, body {
             height: 100%;
@@ -18,11 +22,6 @@
             flex-direction: column;
         }
 
-        .content {
-            flex: 1;
-            padding: 20px;
-        }
-
         footer {
             margin-top: auto;
         }
@@ -31,18 +30,34 @@
 <body>
     <div class="bar">
         <a href="admin-dashboard.html">Admin Dashboard</a>
-        <a href="opening.html">Opening</a>
+        <a href="opening.html">Open</a>
         <a href="pending.html">Pending</a>
-        <a href="closed.html">Closed</a>
-    </div>    
-    <div class="content">
+        <a href="closed.html" class="active">Closed</a>
+        <a href="logout.html">Logout</a>
+    </div>
+
+    <div class="panel">
         <h1>Resolved Complaints</h1>
-        <p>Welcome to the Resolved Complaints page. Here you can view all the complaints that have been resolved and closed.</p>
-        <p>Use the navigation links above to access different sections of the complaint management system.</p>
-    </div>  
-    
+        <p>Complaints that have been resolved and closed.</p>
+        <p id="emptyState" class="empty-state" hidden>There are no closed complaints.</p>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Submitted By</th>
+                    <th>Type</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Assigned To</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="complaintsBody"></tbody>
+        </table>
+    </div>
+
     <footer style="background-color: #333; color: white; padding: 20px; text-align: center;">
-        
         <p>&copy; 2026 Ministry of Local Government</p>
     </footer>
 </body>

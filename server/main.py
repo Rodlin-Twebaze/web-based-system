@@ -1,4 +1,5 @@
 import re
+import uuid
 from datetime import datetime, timezone
 
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -40,11 +41,46 @@ class LoginRequest(BaseModel):
     password: str = Field(..., min_length=1)
 
 
+class CreateUserRequest(BaseModel):
+    name: str = Field(..., min_length=1)
+    username: str = Field(..., min_length=1)
+    email: str = Field(..., min_length=1)
+    role: str = Field(default="user")
+    password: str = Field(..., min_length=6)
+
+
+class UpdateUserRequest(BaseModel):
+    name: str | None = Field(default=None, min_length=1)
+    username: str | None = Field(default=None, min_length=1)
+    email: str | None = Field(default=None, min_length=1)
+    role: str | None = None
+    password: str | None = Field(default=None, min_length=6)
+
+
 def _normalize_role(role: str) -> str:
     normalized_role = role.strip().lower()
     if normalized_role not in {"admin", "user"}:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Role must be either 'admin' or 'user'")
     return normalized_role
+
+
+def _serialize_user(user: User) -> dict[str, Any]:
+    return {
+        "id": str(user.id),
+        "name": user.name,
+        "username": user.username,
+        "email": user.email,
+        "role": user.role,
+        "created_at": user.created_at,
+        "updated_at": user.updated_at,
+    }
+
+
+def _get_user_or_404(db: Session, user_id: uuid.UUID) -> User:
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user
 
 
 @app.get("/")
@@ -112,27 +148,96 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
 # User routes
 @app.get("/users")
-def get_users():
-    return {"message": "List of users"}
+def get_users(
+    name: str | None = None,
+    username: str | None = None,
+    email: str | None = None,
+    role: str | None = None,
+    db: Session = Depends(get_db),
+):
+    query = db.query(User)
+    if name:
+        query = query.filter(User.name.ilike(f"%{name.strip()}%"))
+    if username:
+        query = query.filter(User.username == username.strip())
+    if email:
+        query = query.filter(User.email == email.strip().lower())
+    if role:
+        query = query.filter(User.role == _normalize_role(role))
+
+    users = query.all()
+    return {"message": "List of users", "users": [_serialize_user(user) for user in users]}
 
 
 @app.get("/users/{user_id}")
-def get_user(user_id: str):
-    return {"message": f"Details of user {user_id}"}
+def get_user(user_id: uuid.UUID, db: Session = Depends(get_db)):
+    user = _get_user_or_404(db, user_id)
+    return {"message": f"Details of user {user_id}", "user": _serialize_user(user)}
 
 
-@app.post("/users")
-def create_user():
-    return {"message": "User created"}
+@app.post("/users", status_code=status.HTTP_201_CREATED)
+def create_user(payload: CreateUserRequest, db: Session = Depends(get_db)):
+    email = payload.email.strip().lower()
+    if db.query(User).filter(User.email == email).first():
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
+
+    username = payload.username.strip()
+    if db.query(User).filter(User.username == username).first():
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already taken")
+
+    role = _normalize_role(payload.role)
+    user = User(
+        name=payload.name.strip(),
+        username=username,
+        email=email,
+        role=role,
+    )
+    user.set_password(payload.password)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    return {"message": "User created", "user": _serialize_user(user)}
 
 
 @app.patch("/users/{user_id}")
-def update_user(user_id: str):
-    return {"message": f"User {user_id} updated"}
+def update_user(user_id: uuid.UUID, payload: UpdateUserRequest, db: Session = Depends(get_db)):
+    user = _get_user_or_404(db, user_id)
+
+    if payload.email is not None:
+        email = payload.email.strip().lower()
+        if db.query(User).filter(User.email == email, User.id != user_id).first():
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
+        cast(Any, user).email = email
+
+    if payload.username is not None:
+        username = payload.username.strip()
+        if db.query(User).filter(User.username == username, User.id != user_id).first():
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already taken")
+        cast(Any, user).username = username
+
+    if payload.name is not None:
+        cast(Any, user).name = payload.name.strip()
+
+    if payload.role is not None:
+        cast(Any, user).role = _normalize_role(payload.role)
+
+    if payload.password is not None:
+        user.set_password(payload.password)
+
+    cast(Any, user).updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(user)
+
+    return {"message": f"User {user_id} updated", "user": _serialize_user(user)}
 
 
 @app.delete("/users/{user_id}")
-def delete_user(user_id: str):
+def delete_user(user_id: uuid.UUID, db: Session = Depends(get_db)):
+    user = _get_user_or_404(db, user_id)
+    db.delete(user)
+    db.commit()
+
     return {"message": f"User {user_id} deleted"}
 
 

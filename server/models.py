@@ -44,6 +44,7 @@ class Complaint(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
     created_by_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=False, index=True)
     complaint_type = Column(String(50), nullable=False)
+    message = Column(String(255), nullable=False)
     date_created = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     date_updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     status = Column(String(20), nullable=False, default="open")

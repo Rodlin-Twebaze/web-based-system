@@ -2,7 +2,7 @@ import re
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import MetaData
@@ -12,11 +12,11 @@ from sqlalchemy.orm import Session
 try:
     # If package is installed/imported as a module
     from server.database import get_db, init_db
-    from server.models import Base, User
+    from server.models import Base, Complaint, User
 except Exception:
     # Fallback for running module as a script (direct execution)
     from database import get_db, init_db
-    from models import Base, User
+    from models import Base, Complaint, User
 
 app = FastAPI()
 
@@ -57,11 +57,36 @@ class UpdateUserRequest(BaseModel):
     password: str | None = Field(default=None, min_length=6)
 
 
+class CreateComplaintRequest(BaseModel):
+    created_by_user_id: uuid.UUID
+    complaint_type: str = Field(..., min_length=1)
+    message: str = Field(..., min_length=1, max_length=255)
+    status: str = Field(default="open")
+
+
+class UpdateComplaintRequest(BaseModel):
+    created_by_user_id: uuid.UUID | None = None
+    complaint_type: str | None = Field(default=None, min_length=1)
+    message: str | None = Field(default=None, min_length=1, max_length=255)
+    status: str | None = None
+    assigned_to_user_id: uuid.UUID | None = None
+
+
 def _normalize_role(role: str) -> str:
     normalized_role = role.strip().lower()
     if normalized_role not in {"admin", "user"}:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Role must be either 'admin' or 'user'")
     return normalized_role
+
+
+def _normalize_status(complaint_status: str) -> str:
+    normalized_status = complaint_status.strip().lower()
+    if normalized_status not in {"open", "pending", "closed"}:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Status must be one of 'open', 'pending', 'closed'",
+        )
+    return normalized_status
 
 
 def _serialize_user(user: User) -> dict[str, Any]:
@@ -81,6 +106,26 @@ def _get_user_or_404(db: Session, user_id: uuid.UUID) -> User:
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user
+
+
+def _serialize_complaint(complaint: Complaint) -> dict[str, Any]:
+    return {
+        "id": str(complaint.id),
+        "created_by_user_id": str(complaint.created_by_user_id),
+        "complaint_type": complaint.complaint_type,
+        "message": complaint.message,
+        "status": complaint.status,
+        "assigned_to_user_id": str(complaint.assigned_to_user_id) if complaint.assigned_to_user_id else None,
+        "date_created": complaint.date_created,
+        "date_updated": complaint.date_updated,
+    }
+
+
+def _get_complaint_or_404(db: Session, complaint_id: uuid.UUID) -> Complaint:
+    complaint = db.query(Complaint).filter(Complaint.id == complaint_id).first()
+    if not complaint:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Complaint not found")
+    return complaint
 
 
 @app.get("/")
@@ -243,26 +288,87 @@ def delete_user(user_id: uuid.UUID, db: Session = Depends(get_db)):
 
 # Complaint routes
 @app.get("/complaints")
-def get_complaints():
-    return {"message": "List of complaints"}
+def get_complaints(
+    status: str | None = Query(default=None),
+    complaint_type: str | None = None,
+    created_by_user_id: uuid.UUID | None = None,
+    assigned_to_user_id: uuid.UUID | None = None,
+    db: Session = Depends(get_db),
+):
+    query = db.query(Complaint)
+    if status:
+        query = query.filter(Complaint.status == _normalize_status(status))
+    if complaint_type:
+        query = query.filter(Complaint.complaint_type.ilike(f"%{complaint_type.strip()}%"))
+    if created_by_user_id:
+        query = query.filter(Complaint.created_by_user_id == created_by_user_id)
+    if assigned_to_user_id:
+        query = query.filter(Complaint.assigned_to_user_id == assigned_to_user_id)
+
+    complaints = query.all()
+    return {"message": "List of complaints", "complaints": [_serialize_complaint(c) for c in complaints]}
 
 
 @app.get("/complaints/{complaint_id}")
-def get_complaint(complaint_id: str):
-    return {"message": f"Details of complaint {complaint_id}"}
+def get_complaint(complaint_id: uuid.UUID, db: Session = Depends(get_db)):
+    complaint = _get_complaint_or_404(db, complaint_id)
+    return {"message": f"Details of complaint {complaint_id}", "complaint": _serialize_complaint(complaint)}
 
 
-@app.post("/complaints")
-def create_complaint():
-    return {"message": "Complaint created"}
+@app.post("/complaints", status_code=status.HTTP_201_CREATED)
+def create_complaint(payload: CreateComplaintRequest, db: Session = Depends(get_db)):
+    creator = _get_user_or_404(db, payload.created_by_user_id)
+
+    complaint = Complaint(
+        created_by_user_id=creator.id,
+        complaint_type=payload.complaint_type.strip(),
+        message=payload.message.strip(),
+        status=_normalize_status(payload.status),
+    )
+    db.add(complaint)
+    db.commit()
+    db.refresh(complaint)
+
+    return {"message": "Complaint created", "complaint": _serialize_complaint(complaint)}
 
 
 @app.patch("/complaints/{complaint_id}")
-def update_complaint(complaint_id: str):
-    return {"message": f"Complaint {complaint_id} updated"}
+def update_complaint(complaint_id: uuid.UUID, payload: UpdateComplaintRequest, db: Session = Depends(get_db)):
+    complaint = _get_complaint_or_404(db, complaint_id)
+    updates = payload.model_dump(exclude_unset=True)
+
+    if "created_by_user_id" in updates:
+        creator = _get_user_or_404(db, updates["created_by_user_id"])
+        cast(Any, complaint).created_by_user_id = creator.id
+
+    if "complaint_type" in updates:
+        cast(Any, complaint).complaint_type = updates["complaint_type"].strip()
+
+    if "message" in updates:
+        cast(Any, complaint).message = updates["message"].strip()
+
+    if "status" in updates:
+        cast(Any, complaint).status = _normalize_status(updates["status"])
+
+    if "assigned_to_user_id" in updates:
+        assigned_to_user_id = updates["assigned_to_user_id"]
+        if assigned_to_user_id is not None:
+            assignee = _get_user_or_404(db, assigned_to_user_id)
+            assigned_to_user_id = assignee.id
+        cast(Any, complaint).assigned_to_user_id = assigned_to_user_id
+
+    cast(Any, complaint).date_updated = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(complaint)
+
+    return {"message": f"Complaint {complaint_id} updated", "complaint": _serialize_complaint(complaint)}
 
 
 @app.delete("/complaints/{complaint_id}")
-def delete_complaint(complaint_id: str):
+def delete_complaint(complaint_id: uuid.UUID, db: Session = Depends(get_db)):
+    complaint = _get_complaint_or_404(db, complaint_id)
+    db.delete(complaint)
+    db.commit()
+
     return {"message": f"Complaint {complaint_id} deleted"}
 
